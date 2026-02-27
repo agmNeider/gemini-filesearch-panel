@@ -4,6 +4,9 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const auth = request.cookies.get('fsg_auth')?.value === 'true';
   const isLoginPage = request.nextUrl.pathname === '/login';
+  const isApi = request.nextUrl.pathname.startsWith('/api/');
+
+  if (isApi) return NextResponse.next();
 
   if (!auth && !isLoginPage) {
     return NextResponse.redirect(new URL('/login', request.url));

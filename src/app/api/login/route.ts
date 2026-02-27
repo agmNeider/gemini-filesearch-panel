@@ -16,7 +16,13 @@ export async function POST(request: NextRequest) {
 
   if (username === validUser && password === validPass) {
     const response = NextResponse.json({ ok: true });
-    response.cookies.set('fsg_auth', 'true', { path: '/', sameSite: 'strict' });
+    response.cookies.set('fsg_auth', 'true', {
+      httpOnly: true,
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7, // 7 días
+    });
     return response;
   }
 

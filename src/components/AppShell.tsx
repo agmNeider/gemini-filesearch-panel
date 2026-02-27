@@ -8,8 +8,8 @@ import { logout } from '@/auth';
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push('/login');
   };
 
@@ -60,7 +60,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             type="text"
             size="small"
             icon={<LogoutOutlined />}
-            onClick={handleLogout}
+            onClick={() => void handleLogout()}
             style={{
               color: 'rgba(232,238,255,0.35)',
               fontSize: 13,
