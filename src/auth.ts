@@ -5,12 +5,13 @@ export function isAuthenticated(): boolean {
   return document.cookie.includes(`${COOKIE}=true`);
 }
 
-export function login(username: string, password: string): boolean {
-  if (username === 'agentemotor' && password === 'AgentemotorR4G32!') {
-    document.cookie = `${COOKIE}=true; path=/; SameSite=Strict`;
-    return true;
-  }
-  return false;
+export async function login(username: string, password: string): Promise<boolean> {
+  const res = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  return res.ok;
 }
 
 export function logout(): void {

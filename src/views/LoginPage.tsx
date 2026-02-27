@@ -18,18 +18,21 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const handleSubmit = (values: FormValues) => {
+  const handleSubmit = async (values: FormValues) => {
     setLoading(true);
     setError(false);
-    setTimeout(() => {
-      const ok = login(values.username, values.password);
+    try {
+      const ok = await login(values.username, values.password);
       if (ok) {
         router.push('/');
       } else {
         setError(true);
-        setLoading(false);
       }
-    }, 300);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
