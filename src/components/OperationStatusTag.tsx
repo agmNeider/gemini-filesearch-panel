@@ -1,34 +1,31 @@
 'use client';
 
-import { Tag } from 'antd';
-import { CheckCircleOutlined, CloseCircleOutlined, SyncOutlined } from '@ant-design/icons';
 import type { OperationStatus } from '../hooks/useOperation';
 
-interface Props {
-  status: OperationStatus;
-}
+const config: Record<OperationStatus, { color: string; label: string; pulse: boolean }> = {
+  idle:    { color: 'rgba(232,238,255,0.2)', label: 'Inactivo',    pulse: false },
+  pending: { color: '#f59e0b',               label: 'Procesando',  pulse: true  },
+  done:    { color: '#22c55e',               label: 'Completado',  pulse: false },
+  error:   { color: '#ef4444',               label: 'Fallido',     pulse: false },
+};
 
-export function OperationStatusTag({ status }: Props) {
-  switch (status) {
-    case 'pending':
-      return (
-        <Tag icon={<SyncOutlined spin />} color="processing">
-          Procesando
-        </Tag>
-      );
-    case 'done':
-      return (
-        <Tag icon={<CheckCircleOutlined />} color="success">
-          Completado
-        </Tag>
-      );
-    case 'error':
-      return (
-        <Tag icon={<CloseCircleOutlined />} color="error">
-          Fallido
-        </Tag>
-      );
-    default:
-      return null;
-  }
+export function OperationStatusTag({ status }: { status: OperationStatus }) {
+  const c = config[status];
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13 }}>
+      <span
+        className={c.pulse ? 'pulse' : undefined}
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: '50%',
+          background: c.color,
+          display: 'inline-block',
+          flexShrink: 0,
+          boxShadow: c.pulse ? `0 0 6px ${c.color}` : 'none',
+        }}
+      />
+      <span style={{ color: c.color, fontWeight: 500 }}>{c.label}</span>
+    </span>
+  );
 }

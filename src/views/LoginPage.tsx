@@ -1,12 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Form, Input, Button, Card, Typography, Alert } from 'antd';
+import { Form, Input, Button, Alert } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import { login } from '@/auth';
-
-const { Title, Text } = Typography;
 
 interface FormValues {
   username: string;
@@ -39,61 +37,126 @@ export function LoginPage() {
     <div
       style={{
         minHeight: '100vh',
+        background: '#080d1a',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #001529 0%, #003366 100%)',
+        padding: 24,
       }}
     >
-      <Card style={{ width: 380, boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <Title level={3} style={{ margin: 0 }}>
+      {/* Subtle grid background */}
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundImage:
+            'linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+          pointerEvents: 'none',
+        }}
+      />
+
+      <div style={{ width: '100%', maxWidth: 360, position: 'relative' }}>
+        {/* Brand */}
+        <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 40,
+              height: 40,
+              background: 'rgba(0,212,170,0.1)',
+              border: '1px solid rgba(0,212,170,0.25)',
+              borderRadius: 10,
+              marginBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                width: 14,
+                height: 14,
+                background: '#00d4aa',
+                borderRadius: 3,
+                boxShadow: '0 0 12px rgba(0,212,170,0.6)',
+              }}
+            />
+          </div>
+          <div
+            style={{
+              fontSize: 18,
+              fontWeight: 700,
+              color: '#e8eeff',
+              letterSpacing: '-0.02em',
+              marginBottom: 4,
+            }}
+          >
             FileSearch Gemini
-          </Title>
-          <Text type="secondary">Administración de File Stores</Text>
+          </div>
+          <div style={{ fontSize: 13, color: 'rgba(232,238,255,0.38)' }}>
+            Panel de administración
+          </div>
         </div>
 
-        {error && (
-          <Alert
-            message="Usuario o contraseña incorrectos"
-            type="error"
-            showIcon
-            style={{ marginBottom: 16 }}
-          />
-        )}
-
-        <Form layout="vertical" onFinish={handleSubmit} requiredMark={false}>
-          <Form.Item
-            name="username"
-            rules={[{ required: true, message: 'Ingresa tu usuario' }]}
-          >
-            <Input
-              prefix={<UserOutlined />}
-              placeholder="Usuario"
-              size="large"
-              autoComplete="username"
+        {/* Card */}
+        <div
+          style={{
+            background: '#0d1526',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 12,
+            padding: 28,
+          }}
+        >
+          {error && (
+            <Alert
+              message="Usuario o contraseña incorrectos"
+              type="error"
+              showIcon
+              style={{ marginBottom: 20, fontSize: 13 }}
             />
-          </Form.Item>
+          )}
 
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: 'Ingresa tu contraseña' }]}
-          >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Contraseña"
+          <Form layout="vertical" onFinish={handleSubmit} requiredMark={false}>
+            <Form.Item
+              name="username"
+              rules={[{ required: true, message: 'Ingresa tu usuario' }]}
+              style={{ marginBottom: 14 }}
+            >
+              <Input
+                prefix={<UserOutlined style={{ color: 'rgba(232,238,255,0.3)', fontSize: 13 }} />}
+                placeholder="Usuario"
+                size="large"
+                autoComplete="username"
+                autoFocus
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="password"
+              rules={[{ required: true, message: 'Ingresa tu contraseña' }]}
+              style={{ marginBottom: 20 }}
+            >
+              <Input.Password
+                prefix={<LockOutlined style={{ color: 'rgba(232,238,255,0.3)', fontSize: 13 }} />}
+                placeholder="Contraseña"
+                size="large"
+                autoComplete="current-password"
+              />
+            </Form.Item>
+
+            <Button
+              type="primary"
+              htmlType="submit"
               size="large"
-              autoComplete="current-password"
-            />
-          </Form.Item>
-
-          <Form.Item style={{ marginBottom: 0 }}>
-            <Button type="primary" htmlType="submit" size="large" block loading={loading}>
+              block
+              loading={loading}
+              style={{ fontWeight: 600 }}
+            >
               Ingresar
             </Button>
-          </Form.Item>
-        </Form>
-      </Card>
+          </Form>
+        </div>
+      </div>
     </div>
   );
 }

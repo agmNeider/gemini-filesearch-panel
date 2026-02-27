@@ -1,21 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
-import {
-  Table,
-  Button,
-  Space,
-  Tag,
-  Tooltip,
-  Popconfirm,
-  Checkbox,
-  Typography,
-  message,
-} from 'antd';
-import { DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Tooltip, Popconfirm, Checkbox, Typography, message } from 'antd';
+import { DeleteOutlined, ReloadOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { listDocuments, deleteDocument } from '../api/gemini';
-import type { Document, DocumentState } from '../types';
+import { listDocuments, deleteDocument } from '@/api/gemini';
+import type { Document, DocumentState } from '@/types';
 
 interface Props {
   storeName: string;
@@ -25,17 +15,31 @@ export interface DocumentsTableRef {
   reload: () => void;
 }
 
-function StateTag({ state }: { state: DocumentState }) {
-  switch (state) {
-    case 'ACTIVE':
-      return <Tag color="success">Activo</Tag>;
-    case 'PENDING':
-      return <Tag color="processing">Pendiente</Tag>;
-    case 'FAILED':
-      return <Tag color="error">Fallido</Tag>;
-    default:
-      return <Tag>{state}</Tag>;
-  }
+const stateConfig: Record<DocumentState, { color: string; label: string; pulse: boolean }> = {
+  ACTIVE:           { color: '#22c55e', label: 'Activo',    pulse: false },
+  PENDING:          { color: '#f59e0b', label: 'Pendiente', pulse: true  },
+  FAILED:           { color: '#ef4444', label: 'Fallido',   pulse: false },
+  STATE_UNSPECIFIED:{ color: 'rgba(232,238,255,0.25)', label: '—', pulse: false },
+};
+
+function StateIndicator({ state }: { state: DocumentState }) {
+  const c = stateConfig[state] ?? stateConfig.STATE_UNSPECIFIED;
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+      <span
+        className={c.pulse ? 'pulse' : undefined}
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: '50%',
+          background: c.color,
+          display: 'inline-block',
+          flexShrink: 0,
+        }}
+      />
+      <span style={{ color: c.color, fontWeight: 500 }}>{c.label}</span>
+    </span>
+  );
 }
 
 function formatBytes(bytes: number): string {
@@ -97,8 +101,12 @@ export const DocumentsTable = forwardRef<DocumentsTableRef, Props>(
         title: 'ID',
         dataIndex: 'name',
         ellipsis: true,
+        width: 160,
         render: (name: string) => (
-          <Typography.Text code copyable style={{ fontSize: 12 }}>
+          <Typography.Text
+            copyable
+            style={{ fontSize: 11, color: 'rgba(232,238,255,0.35)', fontFamily: 'monospace' }}
+          >
             {docId(name)}
           </Typography.Text>
         ),
@@ -107,47 +115,62 @@ export const DocumentsTable = forwardRef<DocumentsTableRef, Props>(
         title: 'Nombre',
         dataIndex: 'displayName',
         ellipsis: true,
-        render: (v?: string) => v ?? <Typography.Text type="secondary">—</Typography.Text>,
+        render: (v?: string) => (
+          <span style={{ fontSize: 13, color: v ? '#e8eeff' : 'rgba(232,238,255,0.28)', fontStyle: v ? 'normal' : 'italic' }}>
+            {v ?? 'Sin nombre'}
+          </span>
+        ),
       },
       {
         title: 'Estado',
         dataIndex: 'state',
         width: 110,
-        render: (state: DocumentState) => <StateTag state={state} />,
+        render: (state: DocumentState) => <StateIndicator state={state} />,
       },
       {
         title: 'Tipo',
         dataIndex: 'mimeType',
-        width: 160,
+        width: 170,
         ellipsis: true,
-        render: (v: string) => <Typography.Text type="secondary">{v || '—'}</Typography.Text>,
+        render: (v: string) => (
+          <span style={{ fontSize: 11, color: 'rgba(232,238,255,0.35)', fontFamily: 'monospace' }}>
+            {v || '—'}
+          </span>
+        ),
       },
       {
         title: 'Tamaño',
         dataIndex: 'sizeBytes',
         width: 90,
         align: 'right',
-        render: (v: number) => formatBytes(v),
+        render: (v: number) => (
+          <span style={{ fontSize: 12, color: 'rgba(232,238,255,0.5)' }}>{formatBytes(v)}</span>
+        ),
       },
       {
         title: 'Creado',
         dataIndex: 'createTime',
-        width: 130,
-        render: (v: string) => new Date(v).toLocaleDateString('es'),
+        width: 110,
+        render: (v: string) => (
+          <span style={{ fontSize: 12, color: 'rgba(232,238,255,0.35)' }}>
+            {new Date(v).toLocaleDateString('es')}
+          </span>
+        ),
       },
       {
-        title: 'Acciones',
+        title: '',
         key: 'actions',
-        width: 80,
+        width: 48,
         render: (_, record) => (
           <Popconfirm
             title="Eliminar documento"
             description={
-              <Space direction="vertical">
-                <span>¿Eliminar este documento?</span>
+              <Space direction="vertical" size={6}>
+                <span style={{ fontSize: 13 }}>¿Eliminar este documento?</span>
                 <Checkbox
                   checked={forceDelete}
                   onChange={(e) => setForceDelete(e.target.checked)}
+                  style={{ fontSize: 12 }}
                 >
                   Forzar (eliminar chunks)
                 </Checkbox>
@@ -156,14 +179,16 @@ export const DocumentsTable = forwardRef<DocumentsTableRef, Props>(
             onConfirm={() => void handleDelete(record.name)}
             okText="Eliminar"
             cancelText="Cancelar"
-            okButtonProps={{ danger: true }}
+            okButtonProps={{ danger: true, size: 'small' }}
           >
-            <Tooltip title="Eliminar documento">
+            <Tooltip title="Eliminar">
               <Button
-                danger
-                icon={<DeleteOutlined />}
-                loading={deletingKey === record.name}
+                type="text"
                 size="small"
+                danger
+                icon={<DeleteOutlined style={{ fontSize: 12 }} />}
+                loading={deletingKey === record.name}
+                style={{ opacity: 0.5 }}
               />
             </Tooltip>
           </Popconfirm>
@@ -172,38 +197,70 @@ export const DocumentsTable = forwardRef<DocumentsTableRef, Props>(
     ];
 
     return (
-      <Table
-        rowKey="name"
-        columns={columns}
-        dataSource={docs}
-        loading={loading}
-        size="small"
-        bordered
-        pagination={false}
-        locale={{ emptyText: 'No hay documentos en este store.' }}
-        footer={() => (
-          <Space>
-            <Button
-              size="small"
-              icon={<ReloadOutlined />}
-              onClick={() => void load(pageToken)}
-              loading={loading}
-            >
-              Actualizar
-            </Button>
+      <>
+        <Table
+          rowKey="name"
+          columns={columns}
+          dataSource={docs}
+          loading={loading}
+          size="small"
+          pagination={false}
+          locale={{
+            emptyText: (
+              <div style={{ padding: '32px 0', color: 'rgba(232,238,255,0.28)', fontSize: 13 }}>
+                No hay documentos en este store
+              </div>
+            ),
+          }}
+        />
+
+        {/* Footer pagination */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '10px 16px',
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+          }}
+        >
+          <Button
+            type="text"
+            size="small"
+            icon={<ReloadOutlined />}
+            onClick={() => void load(pageToken)}
+            loading={loading}
+            style={{ color: 'rgba(232,238,255,0.4)', fontSize: 12 }}
+          >
+            Actualizar
+          </Button>
+
+          <Space size={4}>
             {pageToken && (
-              <Button size="small" onClick={() => setPageToken(undefined)}>
-                Primera página
+              <Button
+                type="text"
+                size="small"
+                icon={<LeftOutlined />}
+                onClick={() => setPageToken(undefined)}
+                style={{ color: 'rgba(232,238,255,0.4)', fontSize: 12 }}
+              >
+                Primera
               </Button>
             )}
             {nextPageToken && (
-              <Button size="small" onClick={() => setPageToken(nextPageToken)}>
-                Siguiente página
+              <Button
+                type="text"
+                size="small"
+                onClick={() => setPageToken(nextPageToken)}
+                style={{ color: 'rgba(232,238,255,0.4)', fontSize: 12 }}
+              >
+                Siguiente
+                <RightOutlined style={{ fontSize: 10, marginLeft: 4 }} />
               </Button>
             )}
           </Space>
-        )}
-      />
+        </div>
+      </>
     );
   },
 );
